@@ -71,9 +71,15 @@ app.use('/api/financeiro', financeiroRouter);
 app.use('/api/tenants', tenantRouter);
 app.use('/api/admin', adminRouter);
 
-// ── 404 Handler ──────────────────────────────
+// ── SPA Fallback ─────────────────────────────
+// Rotas /api/* e /health → 404 JSON normal
+// Qualquer outra rota (/dashboard, /login etc) → serve index.html
+// para o frontend tratar a navegação
 app.use((req, res) => {
-  res.status(404).json({ error: 'Rota não encontrada' });
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return res.status(404).json({ error: 'Rota não encontrada' });
+  }
+  res.sendFile('index.html', { root: 'public' });
 });
 
 // ── Error Handler Global ─────────────────────
