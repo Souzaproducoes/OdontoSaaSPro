@@ -1,5 +1,5 @@
 // =============================================
-// CACHE SERVICE — Redis/Upstash
+// CACHE SERVICE — Redis/Upstash (corrigido)
 // =============================================
 import Redis from 'ioredis';
 import { logger } from '../utils/logger.js';
@@ -7,17 +7,23 @@ import { logger } from '../utils/logger.js';
 let redis;
 
 export async function initCache() {
-  redis = new Redis(process.env.REDIS_URL, {
+  const redisUrl = process.env.REDIS_URL;
+
+  redis = new Redis(redisUrl, {
     maxRetriesPerRequest: 3,
     retryStrategy: (times) => Math.min(times * 100, 3000),
-    enableOfflineQueue: false
+    enableOfflineQueue: true,   // ← era false, causava falha imediata
+    tls: redisUrl?.startsWith('rediss://') ? {} : undefined, // ← TLS para Upstash
+    lazyConnect: true,          // ← não conecta no construtor
   });
 
   redis.on('error', (err) => logger.error('Redis error:', err.message));
-  redis.on('connect', () => logger.info('Redis conectado'));
+  redis.on('connect', () => logger.info('✅ Redis conectado'));
 
-  // Testar conexão
+  // Conecta explicitamente e aguarda antes do ping
+  await redis.connect();
   await redis.ping();
+
   return redis;
 }
 
