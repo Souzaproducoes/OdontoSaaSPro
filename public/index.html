@@ -187,10 +187,11 @@
     nav.scrolled { box-shadow: var(--shadow-md); }
 
     .nav-logo {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 8px;
       font-family: var(--font-title);
-      font-size: 1.4rem; font-weight: 700;
+      font-size: clamp(1rem, 3.5vw, 1.4rem); font-weight: 700;
       color: var(--azul); text-decoration: none;
+      white-space: nowrap; flex-shrink: 0;
     }
     .nav-logo span { color: var(--verde-med); }
 
@@ -204,6 +205,55 @@
       transition: color .2s;
     }
     .nav-links a:hover { color: var(--azul); }
+
+    /* ── HAMBURGER ── */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column; justify-content: center; gap: 5px;
+      width: 40px; height: 40px;
+      background: none; border: none; cursor: pointer;
+      padding: 4px;
+    }
+    .nav-hamburger span {
+      display: block; width: 24px; height: 2px;
+      background: var(--azul); border-radius: 2px;
+      transition: all .3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ── MOBILE MENU ── */
+    .nav-mobile-menu {
+      display: none;
+      position: fixed; top: 68px; left: 0; right: 0;
+      background: rgba(250,252,255,.98);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--cinza-2);
+      padding: 20px 5% 24px;
+      z-index: 99;
+      box-shadow: var(--shadow-md);
+    }
+    .nav-mobile-menu.open { display: block; }
+    .nav-mobile-menu ul {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 4px;
+      margin-bottom: 20px;
+    }
+    .nav-mobile-menu ul a {
+      display: block; padding: 12px 0;
+      color: var(--azul); text-decoration: none;
+      font-size: 1rem; font-weight: 600;
+      border-bottom: 1px solid var(--cinza-2);
+      transition: color .2s;
+    }
+    .nav-mobile-menu ul a:hover { color: var(--azul-med); }
+    .nav-mobile-menu .nav-mobile-cta {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .nav-mobile-menu .nav-mobile-cta a {
+      text-align: center; justify-content: center;
+    }
 
     .btn { display: inline-flex; align-items: center; gap: 8px; border: none; cursor: pointer; font-family: var(--font-body); font-weight: 600; text-decoration: none; transition: all .25s; border-radius: 50px; }
     .btn-primary { background: var(--azul); color: #fff; padding: 12px 28px; font-size: .95rem; }
@@ -455,6 +505,8 @@
       .footer-grid { grid-template-columns: 1fr 1fr; }
       .nav-links { display: none; }
       .hero-stats { gap: 20px; }
+      .nav-hamburger { display: flex; }
+      .nav-desktop-cta { display: none; }
     }
   </style>
 </head>
@@ -471,11 +523,29 @@
       <li><a href="#planos">Planos</a></li>
       <li><a href="#faq">FAQ</a></li>
     </ul>
-    <div style="display:flex;gap:12px">
+    <div class="nav-desktop-cta" style="display:flex;gap:12px">
       <a href="/dashboard" class="btn btn-secondary" aria-label="Entrar no painel">Entrar</a>
       <a href="#planos" class="btn btn-primary" aria-label="Começar teste gratuito">Teste Grátis</a>
     </div>
+
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Abrir menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+
+  <!-- Mobile Menu -->
+  <div class="nav-mobile-menu" id="nav-mobile-menu" aria-hidden="true">
+    <ul>
+      <li><a href="#agentes" onclick="closeMobileMenu()">IA Multiagentes</a></li>
+      <li><a href="#funcionalidades" onclick="closeMobileMenu()">Funcionalidades</a></li>
+      <li><a href="#planos" onclick="closeMobileMenu()">Planos</a></li>
+      <li><a href="#faq" onclick="closeMobileMenu()">FAQ</a></li>
+    </ul>
+    <div class="nav-mobile-cta">
+      <a href="/dashboard" class="btn btn-secondary">Entrar</a>
+      <a href="#planos" class="btn btn-verde" onclick="closeMobileMenu()">🚀 Teste Grátis 7 Dias</a>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════
        HERO
@@ -484,7 +554,7 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-inner">
         <div class="hero-content">
-          <div class="hero-badge">✦ Novo: IA Multiagentes com Groq LLaMA 3.3</div>
+          <div class="hero-badge">✦ Sistema Multiagentes 24/7 — 5 especialistas para sua clínica</div>
           <h1 id="hero-title">
             Gestão Odontológica com <em>IA que Atende pelo WhatsApp</em>
           </h1>
@@ -811,6 +881,34 @@
     // Navbar scroll
     window.addEventListener('scroll', () => {
       document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Hamburger menu
+    const hamburger = document.getElementById('nav-hamburger');
+    const mobileMenu = document.getElementById('nav-mobile-menu');
+
+    function closeMobileMenu() {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileMenu.setAttribute('aria-hidden', 'true');
+    }
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.contains('open');
+      if (isOpen) {
+        closeMobileMenu();
+      } else {
+        hamburger.classList.add('open');
+        mobileMenu.classList.add('open');
+        hamburger.setAttribute('aria-expanded', 'true');
+        mobileMenu.setAttribute('aria-hidden', 'false');
+      }
+    });
+
+    // Close mobile menu on resize to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) closeMobileMenu();
     });
 
     // FAQ accordion
