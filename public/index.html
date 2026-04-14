@@ -500,13 +500,66 @@
 
     /* ── RESPONSIVO ── */
     @media (max-width: 768px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-visual { display: none; }
-      .footer-grid { grid-template-columns: 1fr 1fr; }
+      /* Prevent horizontal overflow globally */
+      html, body { overflow-x: hidden; max-width: 100%; }
+      *, *::before, *::after { max-width: 100%; }
+
+      /* Nav */
+      nav { padding: 0 4%; overflow: visible; }
       .nav-links { display: none; }
-      .hero-stats { gap: 20px; }
-      .nav-hamburger { display: flex; }
       .nav-desktop-cta { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-logo { font-size: clamp(.9rem, 4vw, 1.1rem); gap: 6px; }
+
+      /* Hero */
+      .hero { padding: 88px 4% 48px; overflow: hidden; }
+      .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+      .hero-visual { display: none; }
+
+      /* Badge — allow wrap but keep it tidy */
+      .hero-badge {
+        white-space: normal;
+        font-size: .78rem;
+        padding: 6px 14px;
+        max-width: 100%;
+        display: inline-flex;
+      }
+
+      /* h1 */
+      .hero h1 { font-size: clamp(1.9rem, 7vw, 2.6rem); }
+
+      /* Paragraph */
+      .hero p { font-size: 1rem; max-width: 100%; }
+
+      /* CTA buttons stack */
+      .hero-cta { flex-direction: column; gap: 12px; }
+      .hero-cta .btn { width: 100%; justify-content: center; }
+      .btn-lg { padding: 16px 24px; font-size: 1rem; }
+
+      /* Stats — wrap into 2x2 grid */
+      .hero-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding-top: 24px;
+      }
+      .stat-num { font-size: 1.5rem; }
+
+      /* Sections */
+      section { padding: 56px 4%; }
+      .agentes-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .plans-grid { grid-template-columns: 1fr; }
+
+      /* Footer */
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+      .footer-bottom { flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    @media (max-width: 400px) {
+      .nav-logo { font-size: .85rem; }
+      .hero h1 { font-size: 1.75rem; }
+      .footer-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
