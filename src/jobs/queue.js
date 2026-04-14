@@ -2,18 +2,26 @@
 // QUEUE — BullMQ para processamento WhatsApp
 // =============================================
 import { Queue, Worker } from 'bullmq';
-import { getRedis } from '../services/cache.service.js';
+import Redis from 'ioredis';
 import { processarMensagem } from '../agents/orchestrator.js';
 import { logger } from '../utils/logger.js';
 
 let whatsappQueue;
 let worker;
 
-export async function initQueues() {
-  const connection = getRedis();
+// BullMQ exige conexão dedicada com maxRetriesPerRequest: null
+function createBullConnection() {
+  const redisUrl = process.env.REDIS_URL;
+  return new Redis(redisUrl, {
+    maxRetriesPerRequest: null,   // ← obrigatório para BullMQ
+    enableOfflineQueue: true,
+    tls: redisUrl?.startsWith('rediss://') ? {} : undefined,
+  });
+}
 
+export async function initQueues() {
   whatsappQueue = new Queue('whatsapp-incoming', {
-    connection,
+    connection: createBullConnection(),
     defaultJobOptions: {
       attempts: 3,
       backoff: { type: 'exponential', delay: 2000 },
@@ -27,9 +35,9 @@ export async function initQueues() {
     logger.info(`[Queue] Processando mensagem de ${numero} para tenant ${tenantId}`);
     await processarMensagem({ tenantId, numero, mensagem, nomeContato });
   }, {
-    connection,
+    connection: createBullConnection(),   // ← conexão separada para o Worker
     concurrency: 5,
-    limiter: { max: 10, duration: 1000 } // Rate limit: 10 msgs/s
+    limiter: { max: 10, duration: 1000 }
   });
 
   worker.on('failed', (job, err) => {
